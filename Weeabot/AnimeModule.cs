@@ -21,7 +21,7 @@ public class AnimeModule : ModuleBase<SocketCommandContext>
         var animeRequest = new GraphQLRequest {
             Query = @"
               query($searchText: String) {
-                Media (search: $searchText, type: ANIME) {
+                Media (search: $searchText, sort: POPULARITY_DESC) {
                   id
                   description
                   averageScore
@@ -59,12 +59,12 @@ public class AnimeModule : ModuleBase<SocketCommandContext>
         {
             var response = await graphQlHttpClient.SendQueryAsync<AnimeType>( animeRequest );
 
-            Console.WriteLine(response.Data);
+            Console.WriteLine(response.Data.Media.Title.Romaji);
             var mediaResponse = response.Data.Media;
-            var newDesc = mediaResponse.Description.Replace( "<br>", "" );
+            var newDesc = mediaResponse.Description.Replace( "<br>", "" ).Replace("<i>", "").Replace("</i>", "");
             var newGenres = string.Join<string>(", ", mediaResponse.Genres);
-
-
+            var studios = mediaResponse.Studios.Nodes.Count > 0 ? mediaResponse.Studios.Nodes[0].Name : "n/a";
+            var rankOfAllTime = mediaResponse.Rankings.Count > 0 ? mediaResponse.Rankings[0].Rank.ToString() : "n/a";
             var embedBuilder = new EmbedBuilder
             {
                 Title = "Test",
@@ -73,12 +73,12 @@ public class AnimeModule : ModuleBase<SocketCommandContext>
             embedBuilder.WithTitle( $"{mediaResponse.Title.Romaji} ( {mediaResponse.Title.English} )" );
             embedBuilder.WithUrl( mediaResponse.SiteURL );
             embedBuilder.WithImageUrl( mediaResponse.CoverImage.Large );
-            embedBuilder.WithAuthor( mediaResponse.Studios.Nodes[0].Name );
+            embedBuilder.WithAuthor( studios );
             embedBuilder.WithDescription( newDesc );
             embedBuilder.WithThumbnailUrl( mediaResponse.Banner );
             embedBuilder.WithColor( GenerateRgb( mediaResponse.CoverImage.Color ) );
-            embedBuilder.Fields.Add( new EmbedFieldBuilder().WithName("Average Score").WithValue(mediaResponse.AverageScore).WithIsInline( true ));
-            embedBuilder.Fields.Add( new EmbedFieldBuilder().WithName( "Ranked # All Time" ).WithValue( mediaResponse.Rankings[0].Rank ).WithIsInline( true ) );
+            embedBuilder.Fields.Add( new EmbedFieldBuilder().WithName("Average Score").WithValue( mediaResponse.AverageScore ).WithIsInline( true ));
+            embedBuilder.Fields.Add( new EmbedFieldBuilder().WithName( "Ranked # All Time" ).WithValue( rankOfAllTime ).WithIsInline( true ) );
             embedBuilder.Fields.Add( new EmbedFieldBuilder().WithName( "Genres" ).WithValue( newGenres ).WithIsInline( true ) );
             embedBuilder.WithFooter( "https://anilist.co/" );
 

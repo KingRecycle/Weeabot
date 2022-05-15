@@ -9,6 +9,7 @@ namespace Weeabot;
 public class Program
 {
     public static Task Main(string[] args) => new Program().MainAsync();
+  
 
     private DiscordSocketClient? _client;
     private CommandService? _commands;
@@ -16,6 +17,7 @@ public class Program
 
     public async Task MainAsync()
     {
+        new Test().TestFunction();
         _client = new DiscordSocketClient();
         _client.Log += Log;
         _commands = new CommandService();

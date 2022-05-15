@@ -60,6 +60,7 @@ public class CommandHandler
             argPos: argPos,
             services: null);
     }
+    
 
     private Task Log(LogMessage msg)
     {

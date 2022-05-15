@@ -12,8 +12,7 @@ public class AnimeModule : ModuleBase<SocketCommandContext>
 {
     private const string ANILIST = "https://graphql.anilist.co/";
     private const string ANILIST_ICON = "https://anilist.co/img/icons/icon.svg";
-
-    // ~say hello world -> hello world
+        
     [Command("anime")]
     [Summary("Shows Anilist info on a searched Anime.")]
     public async Task SayAsync([Remainder] [Summary("The text to echo")] string echo)
@@ -59,7 +58,7 @@ public class AnimeModule : ModuleBase<SocketCommandContext>
         {
             var response = await graphQlHttpClient.SendQueryAsync<AnimeType>( animeRequest );
 
-            Console.WriteLine(response.Data.Media.Title.Romaji);
+            Console.WriteLine(response);
             var mediaResponse = response.Data.Media;
             var newDesc = mediaResponse.Description.Replace( "<br>", "" ).Replace("<i>", "").Replace("</i>", "");
             var newGenres = string.Join<string>(", ", mediaResponse.Genres);
@@ -85,9 +84,10 @@ public class AnimeModule : ModuleBase<SocketCommandContext>
             Console.WriteLine($"{mediaResponse.Title.Romaji} : {mediaResponse.Id} : {mediaResponse.SiteURL}");
             await ReplyAsync( embed: embedBuilder.Build() );
         }
-        catch ( Exception e )
+        catch ( GraphQLHttpRequestException e )
         {
-            Console.WriteLine( e );
+            await ReplyAsync( $"Exception Triggered: {e.StatusCode}");
+            Console.WriteLine( e.StatusCode );
             throw;
         }
     }
